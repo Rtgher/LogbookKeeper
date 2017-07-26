@@ -24,7 +24,7 @@ public class LogEntry
     //static block for format assignment.
     static
     {
-        format = new SimpleDateFormat("YY/MM/DD HH:mm", Locale.UK);
+        format = new SimpleDateFormat("yyyy-mm-dd hh:mm", Locale.UK);
     }
 
     /**
