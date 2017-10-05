@@ -1,8 +1,13 @@
 package LogbookKeeper;
 
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 /**
  * Created by Ray-Ray on 18/06/2017.
@@ -12,17 +17,40 @@ public class Main
 {
     /** The frame */
     private static LogFrame frame;
+    /** The menubar */
+    private static JMenuBar menuBar =  new JMenuBar();
+    /** The menus */
+    private static JMenu fileMenu = new JMenu();
+    /** The Menu Items */
+    private static JMenuItem setPathMenu = new JMenuItem();
     /** The File Printer */
     private static PrintWriter out;
-    /** Path to file. */
+    /** Path to file */
     private static String path;
 
     public static void main(String[] args)
     {
+        setPathMenu.setText("Load Log File");
+        setPathMenu.setToolTipText("Set the log file to write in.");
+        setPathMenu.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                if(fileChooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION){
+                    path = fileChooser.getSelectedFile().getAbsolutePath();
+                    frame.setContentTextTo(readLogContent());
+                    frame.repaint();
+                }
+            }
+        });
+        fileMenu.setText("File");
+        fileMenu.add(setPathMenu);
+        menuBar.add(fileMenu);
         frame = new LogFrame();
+        frame.setJMenuBar(menuBar);
         frame.notice.setText("Welcome {0}, setting up your logbook now.".replace("{0}", LoggerProperties.prop.getProperty("user")));
         frame.repaint();
-
+        //try to get path from properties.
         path = LoggerProperties.prop.getProperty("logbook.path");
         if (path != null && !path.equals(""))
         {
@@ -35,19 +63,27 @@ public class Main
             frame.repaint();
             path = "logbook.log";
         }
-
+        //add content
+        frame.setContentTextTo(readLogContent());
+        //add listener
         ActionListener logEntryListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                writeToFile(frame.getLogEntry().toString());
+                String line = frame.getLogEntry().toString();
+                writeToFile(line);
                 frame.notice.setText("Log entry added to file.");
                 frame.text.setText("");
+                frame.addLogEntryToContent(line);
                 frame.repaint();
             }
         };
         frame.logEntryButton.addActionListener(logEntryListener);
     }
 
+    /**
+     * Write LogLine to the .log file.
+     * @param logLine -  the LogLine to be written.
+     */
     public static void writeToFile(String logLine)
     {
         try
@@ -63,6 +99,21 @@ public class Main
         {
             if(out != null) out.close();
         }
+    }
+    /**
+     * Reads the file and returns the content.
+     */
+    public static List<String> readLogContent()
+    {
+        List<String> lines = null;
+        try
+        {
+            lines = Files.readAllLines(Paths.get(path), Charset.defaultCharset());
+        }catch (IOException io)
+        {
+            frame.notice.setText("Caught an error opening/creating your logbook file. Searched for: " + path);
+        }
+        return lines;
     }
 
 

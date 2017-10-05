@@ -42,6 +42,11 @@ public enum LogType
      */
     TESTING,
     /**
+     * This is for the Planning stage.
+     * Use this entry to write down your iteration planning in the logbook.
+     */
+    PLANNING,
+    /**
      * Any non-important/ non-formal notes.
      * These may not be related to the project at all, or anything that does not
      * fit any of the other categories.
